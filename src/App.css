@@ -2336,3 +2336,50 @@
     font-size: 28px;
   }
 }
+
+/* ─── PAGE TRANSITION CURTAIN ─── */
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background-color: var(--hero-bg);
+  background-image: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%);
+  box-shadow: 0 30px 80px rgba(11, 11, 10, 0.25);
+  /* Positioned off-screen by GSAP (yPercent) in App.jsx. */
+}
+
+.curtain-label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+}
+
+.curtain-eyebrow {
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--text-muted);
+}
+
+.curtain-title {
+  font-weight: 500;
+  font-size: 64px;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  color: #000;
+}
+
+@media (max-width: 809px) {
+  .curtain-title {
+    font-size: 44px;
+  }
+}

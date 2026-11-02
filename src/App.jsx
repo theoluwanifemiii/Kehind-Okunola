@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
 import Preloader from './components/Preloader.jsx'
 import Home from './pages/Home.jsx'
 import CaseStudy from './pages/CaseStudy.jsx'
@@ -15,13 +16,19 @@ function getRoute() {
 }
 
 const PAGES = {
-  home: Home,
-  'case-study': CaseStudy,
-  contact: Contact,
+  home: { Component: Home, label: 'Home', title: 'Kehinde Okunola — Product Designer' },
+  'case-study': { Component: CaseStudy, label: 'Case study', title: 'PrepInterview case study — Kehinde Okunola' },
+  contact: { Component: Contact, label: 'Get in touch', title: 'Contact — Kehinde Okunola' },
 }
 
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 function App() {
+  // `route` is where the URL points; `shown` is the page on screen. They differ
+  // while the transition curtain is covering the screen.
   const [route, setRoute] = useState(getRoute)
+  const [shown, setShown] = useState(route)
+
   // First load only: the page mounts once the preloader has finished counting
   // (ready), and the overlay is removed after it slides away (done).
   const [ready, setReady] = useState(false)
@@ -29,25 +36,82 @@ function App() {
   const handleReady = useCallback(() => setReady(true), [])
   const handleDone = useCallback(() => setDone(true), [])
 
+  const curtain = useRef(null)
+  const covering = useRef(false)
+
   useEffect(() => {
     const onHashChange = () => setRoute(getRoute())
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  // On page change, jump to the requested section (e.g. "#work") or the top.
+  useLayoutEffect(() => {
+    gsap.set(curtain.current, { yPercent: 100 })
+  }, [])
+
+  // Cover the screen, then swap the page underneath.
   useEffect(() => {
+    if (route === shown) return
+    if (!done) {
+      setShown(route)
+      return
+    }
+    const el = curtain.current
+    const fast = reduceMotion()
+    const y = gsap.getProperty(el, 'yPercent')
+    const tl = gsap.timeline()
+    // Start from below unless we interrupted a transition that's mid-way.
+    if (y <= -100 || y >= 100) tl.set(el, { yPercent: 100 })
+    tl.to(el, { yPercent: 0, duration: fast ? 0.01 : 0.65, ease: 'expo.inOut' })
+      .fromTo('.curtain-label', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }, '-=0.25')
+      .add(() => {
+        covering.current = true
+        setShown(route)
+      }, '+=0.1')
+    return () => tl.kill()
+  }, [route, shown, done])
+
+  // Once the new page is rendered, jump to the requested section (e.g. "#work") or the top.
+  useEffect(() => {
+    document.title = PAGES[shown].title
     if (!ready) return
     const hash = window.location.hash
-    const section = route === 'home' && hash.length > 1 && !hash.startsWith('#/') && document.getElementById(hash.slice(1))
-    if (section) section.scrollIntoView()
+    const section =
+      shown === 'home' && hash.length > 1 && !hash.startsWith('#/') && document.getElementById(hash.slice(1))
+    if (section) section.scrollIntoView({ behavior: 'instant' })
     else window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [route, ready])
+  }, [shown, ready])
 
-  const Page = PAGES[route]
+  // Then lift the curtain away while the new page's entrance animation plays.
+  useEffect(() => {
+    if (!covering.current) return
+    const el = curtain.current
+    const tl = gsap.timeline({ delay: 0.05 })
+    tl.to('.curtain-label', { opacity: 0, y: -24, duration: 0.3, ease: 'power2.in' })
+      .to(el, {
+        yPercent: -100,
+        duration: reduceMotion() ? 0.01 : 0.8,
+        ease: 'expo.inOut',
+        onComplete: () => {
+          covering.current = false
+          gsap.set(el, { yPercent: 100 })
+        },
+      }, '-=0.1')
+    return () => tl.kill()
+  }, [shown])
+
+  const Page = PAGES[shown].Component
+
   return (
     <>
       {ready && <Page />}
+      <div className="curtain" ref={curtain} aria-hidden="true">
+        <div className="drift"></div>
+        <div className="curtain-label">
+          <span className="curtain-eyebrow">Kehinde Okunola</span>
+          <span className="curtain-title">{PAGES[route].label}</span>
+        </div>
+      </div>
       {!done && <Preloader onReady={handleReady} onDone={handleDone} />}
     </>
   )
