@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"vite --port 5175\")",
+      "Bash(node shot2.mjs)",
+      "Bash(grep -oiE \"@font-face\\\\{[^}]{0,400}\\\\}\" /tmp/jax.html)",
+      "Bash(grep -oiE \"@font-face \\\\{[^}]{0,400}\\\\}\" /tmp/jax.html)",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}
