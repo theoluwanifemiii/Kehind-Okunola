@@ -9,6 +9,7 @@ import {
   GlobeIcon,
   GridIcon,
   PillIcon,
+  StarIcon,
   TargetIcon,
 } from '../components/icons.jsx'
 
@@ -85,8 +86,10 @@ export default function Home() {
 
         <div className="hero-content">
           <div className="pill hero-badge">
-            <span className="hero-stars" aria-label="Five stars">
-              ★★★★★
+            <span className="hero-stars" role="img" aria-label="Five star rating">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <StarIcon key={i} />
+              ))}
             </span>
             35+ Happy Clients
           </div>

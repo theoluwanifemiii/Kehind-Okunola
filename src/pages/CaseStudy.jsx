@@ -6,6 +6,7 @@ import {
   ArrowRightIcon,
   ChatIcon,
   CodeIcon,
+  DotIcon,
   MicIcon,
   SearchIcon,
   UsersIcon,
@@ -138,7 +139,8 @@ const FOOTER_LINKS = [
 function Rec({ color = '#d23c3c' }) {
   return (
     <span className="rec" style={{ color }}>
-      ● REC
+      <DotIcon />
+      REC
     </span>
   )
 }
