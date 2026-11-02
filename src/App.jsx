@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { Analytics } from '@vercel/analytics/react'
 import Preloader from './components/Preloader.jsx'
 import Home from './pages/Home.jsx'
 import CaseStudy from './pages/CaseStudy.jsx'
@@ -15,10 +16,17 @@ function getRoute() {
   return 'home'
 }
 
+// `path` is what Vercel Analytics records for each page. Its automatic tracking
+// ignores the "#/..." part of the URL, so pageviews are reported from here instead.
 const PAGES = {
-  home: { Component: Home, label: 'Home', title: 'Kehinde Okunola — Product Designer' },
-  'case-study': { Component: CaseStudy, label: 'Case study', title: 'PrepInterview case study — Kehinde Okunola' },
-  contact: { Component: Contact, label: 'Get in touch', title: 'Contact — Kehinde Okunola' },
+  home: { Component: Home, label: 'Home', title: 'Kehinde Okunola — Product Designer', path: '/' },
+  'case-study': {
+    Component: CaseStudy,
+    label: 'Case study',
+    title: 'PrepInterview case study — Kehinde Okunola',
+    path: '/case-study/prepinterview',
+  },
+  contact: { Component: Contact, label: 'Get in touch', title: 'Contact — Kehinde Okunola', path: '/contact' },
 }
 
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -105,6 +113,7 @@ function App() {
   return (
     <>
       {ready && <Page />}
+      <Analytics route={PAGES[shown].path} path={PAGES[shown].path} />
       <div className="curtain" ref={curtain} aria-hidden="true">
         <div className="drift"></div>
         <div className="curtain-label">
